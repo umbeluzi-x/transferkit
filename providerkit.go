@@ -6,6 +6,7 @@ type Provider struct {
 	GetTransaction  TransactionChecker
 	CheckAccount    AccountChecker
 	FetchAccount    AccountFetcher
+	FetchBalance    BalanceFetcher
 
 	Config []byte
 }
