@@ -8,16 +8,6 @@ type AccountChecker interface {
 	CheckAccount(ctx context.Context, provider *Provider, payment Account) (*Account, error)
 }
 
-func AccountCheckFunc(f AccountCheckerFunc) AccountChecker {
-	return accountChecker{
-		handler: f,
-	}
-}
-
-type accountChecker struct {
-	handler AccountCheckerFunc
-}
-
-func (t accountChecker) CheckAccount(ctx context.Context, provider *Provider, transaction Account) (*Account, error) {
-	return t.handler(ctx, provider, transaction)
+func (a AccountCheckerFunc) CheckAccount(ctx context.Context, provider *Provider, account Account) (*Account, error) {
+	return a(ctx, provider, account)
 }

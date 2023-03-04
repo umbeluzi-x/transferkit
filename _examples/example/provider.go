@@ -12,12 +12,12 @@ func Build() *providerkit.Provider {
 
 	return &providerkit.Provider{
 		Name:            "EXAMPLE",
-		SendTransaction: providerkit.TransactionSendFunc(exampleProvider.SendTransaction),
+		SendTransaction: providerkit.TransactionSenderFunc(exampleProvider.sendTransaction),
 	}
 }
 
 type exampleProvider struct{}
 
-func (p exampleProvider) SendTransaction(ctx context.Context, provider *providerkit.Provider, transaction providerkit.Transaction) (*providerkit.Transaction, error) {
+func (p exampleProvider) sendTransaction(ctx context.Context, provider *providerkit.Provider, transaction providerkit.Transaction) (*providerkit.Transaction, error) {
 	return nil, errors.New("not implemented")
 }
