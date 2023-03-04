@@ -1,11 +1,13 @@
 package providerkit
 
-import "context"
+import (
+	"context"
+)
 
-type TransactionSenderFunc func(ctx context.Context, provider *Provider, payment Transaction) (*Transaction, error)
+type TransactionSenderFunc func(ctx context.Context, provider *Provider, transaction Transaction) (*Transaction, error)
 
 type TransactionSender interface {
-	SendTransaction(ctx context.Context, provider *Provider, payment Transaction) (*Transaction, error)
+	SendTransaction(ctx context.Context, provider *Provider, transaction Transaction) (*Transaction, error)
 }
 
 func (t TransactionSenderFunc) SendTransaction(ctx context.Context, provider *Provider, transaction Transaction) (*Transaction, error) {
