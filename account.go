@@ -1,3 +1,9 @@
 package transferkit
 
-type Account struct{}
+type AccountCheck struct {
+	DeliveryMethod DeliveryMethod `json:"DeliveryMethod"`
+}
+
+type AccountFetch struct {
+	DeliveryMethod DeliveryMethod `json:"DeliveryMethod"`
+}

@@ -17,10 +17,12 @@ const (
 )
 
 type Transaction struct {
-	ID             int64             `json:"id"`
-	Status         TransactionStatus `json:"status"`
-	DeliveryMethod DeliveryMethod    `json:"delivery_method"`
-	Amount         Money             `json:"amount"`
+	ID                 int64              `json:"id"`
+	Reference          *string            `json:"reference"`
+	Status             TransactionStatus  `json:"status"`
+	DeliveryMethodType DeliveryMethodType `json:"delivery_method_type"`
+	DeliveryAmount     Money              `json:"delivery_amount"`
+	TotalAmount        Money              `json:"total_amount"`
 }
 
 type Money struct {

@@ -5,7 +5,8 @@ import (
 )
 
 var (
-	ErrInvalidPaymentMethod = errors.New("invalid payment method")
+	ErrInvalidDeliveryMethodType = errors.New("invalid payment method")
+	ErrInvalidCurrency           = errors.New("invalid currency")
 )
 
 type Provider struct {
@@ -17,7 +18,7 @@ type Provider struct {
 
 type Requirements struct {
 	SupportedCurrencies     []Currency
-	SupportedPaymentMethods []PaymentMethod
+	SupportedPaymentMethods []DeliveryMethodType
 }
 
 type Operations struct {
@@ -34,9 +35,15 @@ const (
 	CurrencyMZN = "MZN"
 )
 
-type DeliveryMethod string
+type DeliveryMethodType string
 
 const (
-	DeliveryMethodMobileTransfer = DeliveryMethod("MOBILE_TRANSFER")
-	DeliveryMethodBankTransfer   = DeliveryMethod("BANK_TRANSFER")
+	DeliveryMethodTypeMobileTransfer = DeliveryMethodType("MOBILE_TRANSFER")
+	DeliveryMethodTypeBankTransfer   = DeliveryMethodType("BANK_TRANSFER")
 )
+
+type DeliveryMethod struct {
+	Type          DeliveryMethodType `json:"type"`
+	MSISDN        *string            `json:"msisdn"`
+	AccountNumber *string            `json:"account_number"`
+}
