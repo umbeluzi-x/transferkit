@@ -4,16 +4,16 @@ import (
 	"context"
 	"errors"
 
-	"github.com/getumbeluzi/providerkit"
+	"github.com/getumbeluzi/transferkit"
 )
 
-func Build() *providerkit.Provider {
+func Build() *transferkit.Provider {
 	exampleProvider := exampleProvider{}
 
-	return &providerkit.Provider{
+	return &transferkit.Provider{
 		Name:            "EXAMPLE",
-		SendTransaction: providerkit.TransactionSenderFunc(exampleProvider.sendTransaction),
-		SupportedCurrencies: providerkit.SupportedCurrencies{
+		SendTransaction: transferkit.TransactionSenderFunc(exampleProvider.sendTransaction),
+		SupportedCurrencies: transferkit.SupportedCurrencies{
 			"MZN", {}{},
 		}
 	}
@@ -21,6 +21,6 @@ func Build() *providerkit.Provider {
 
 type exampleProvider struct{}
 
-func (p exampleProvider) sendTransaction(ctx context.Context, provider *providerkit.Provider, transaction providerkit.Transaction) (*providerkit.Transaction, error) {
+func (p exampleProvider) sendTransaction(ctx context.Context, provider *transferkit.Provider, transaction transferkit.Transaction) (*transferkit.Transaction, error) {
 	return nil, errors.New("not implemented")
 }

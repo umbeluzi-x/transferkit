@@ -1,4 +1,12 @@
-package providerkit
+package transferkit
+
+import (
+	"errors"
+)
+
+var (
+	ErrInvalidPaymentMethod = errors.New("invalid payment method")
+)
 
 type Provider struct {
 	Name   string
@@ -26,8 +34,9 @@ const (
 	CurrencyMZN = "MZN"
 )
 
-type PaymentMethod string
+type DeliveryMethod string
 
 const (
-	PaymentMethodMobileMoney = PaymentMethod("MOBILE_MONEY")
+	DeliveryMethodMobileTransfer = DeliveryMethod("MOBILE_TRANSFER")
+	DeliveryMethodBankTransfer   = DeliveryMethod("BANK_TRANSFER")
 )

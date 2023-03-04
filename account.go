@@ -1,3 +1,3 @@
-package providerkit
+package transferkit
 
 type Account struct{}

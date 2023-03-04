@@ -1,4 +1,4 @@
-package providerkit
+package transferkit
 
 import "context"
 

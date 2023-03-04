@@ -1,4 +1,4 @@
-package providerkit
+package transferkit
 
 type TransactionStatus string
 
@@ -17,6 +17,13 @@ const (
 )
 
 type Transaction struct {
-	ID     int64             `json:"id"`
-	Status TransactionStatus `json:"status"`
+	ID             int64             `json:"id"`
+	Status         TransactionStatus `json:"status"`
+	DeliveryMethod DeliveryMethod    `json:"delivery_method"`
+	Amount         Money             `json:"amount"`
+}
+
+type Money struct {
+	Value    float64  `json:"value"`
+	Currency Currency `json:"currency"`
 }
