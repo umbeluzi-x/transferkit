@@ -4,12 +4,17 @@ import (
 	"context"
 )
 
-type TransactionSenderFunc func(ctx context.Context, provider *Provider, transaction Transaction) (*Transaction, error)
-
 type TransactionSender interface {
-	SendTransaction(ctx context.Context, provider *Provider, transaction Transaction) (*Transaction, error)
+	SendTransaction(ctx context.Context, provider *Provider, transaction Transaction) (*TransactionSenderResponse, error)
 }
 
-func (t TransactionSenderFunc) SendTransaction(ctx context.Context, provider *Provider, transaction Transaction) (*Transaction, error) {
+type TransactionSenderFunc func(ctx context.Context, provider *Provider, transaction Transaction) (*TransactionSenderResponse, error)
+
+func (t TransactionSenderFunc) SendTransaction(ctx context.Context, provider *Provider, transaction Transaction) (*TransactionSenderResponse, error) {
 	return t(ctx, provider, transaction)
+}
+
+type TransactionSenderResponse struct {
+	Status TransactionStatus        `json:"status"`
+	Reason TransactionFailureReason `json:"reason"`
 }

@@ -13,6 +13,9 @@ func Build() *providerkit.Provider {
 	return &providerkit.Provider{
 		Name:            "EXAMPLE",
 		SendTransaction: providerkit.TransactionSenderFunc(exampleProvider.sendTransaction),
+		SupportedCurrencies: providerkit.SupportedCurrencies{
+			"MZN", {}{},
+		}
 	}
 }
 
