@@ -5,13 +5,13 @@ import (
 )
 
 type TransactionSender interface {
-	SendTransaction(ctx context.Context, provider *Provider, transaction Transaction) (*TransactionSenderResponse, error)
+	SendTransaction(ctx context.Context, transaction *Transaction) (*TransactionSenderResponse, error)
 }
 
-type TransactionSenderFunc func(ctx context.Context, provider *Provider, transaction Transaction) (*TransactionSenderResponse, error)
+type TransactionSenderFunc func(ctx context.Context, transaction *Transaction) (*TransactionSenderResponse, error)
 
-func (t TransactionSenderFunc) SendTransaction(ctx context.Context, provider *Provider, transaction Transaction) (*TransactionSenderResponse, error) {
-	return t(ctx, provider, transaction)
+func (t TransactionSenderFunc) SendTransaction(ctx context.Context, transaction *Transaction) (*TransactionSenderResponse, error) {
+	return t(ctx, transaction)
 }
 
 type TransactionSenderResponse struct {

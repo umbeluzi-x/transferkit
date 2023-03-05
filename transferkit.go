@@ -12,7 +12,7 @@ var (
 	ErrConnectionRefused         = errors.New("connection refused")
 	ErrInvalidProviderCode       = errors.New("invalid provider code")
 	ErrProviderNotFound          = errors.New("provider not found")
-	ErrMissingConfigurator       = errors.New("missing initializer")
+	MissingConfigurationHook     = errors.New("missing initializer")
 )
 
 const (
@@ -38,7 +38,7 @@ type Provider struct {
 
 func (p *Provider) Configure(ctx context.Context, opts *ProviderOptions) error {
 	if p.OnConfigure == nil {
-		return ErrMissingConfigurator
+		return MissingConfigurationHook
 	}
 
 	return p.OnConfigure.Configure(ctx, opts)
@@ -62,7 +62,10 @@ func (p Provider) Validate() error {
 
 type ProviderOptions struct {
 	Config []byte
+	Cache  Cache
 }
+
+type Cache interface{}
 
 type ConfiguratorFunc func(context.Context, *ProviderOptions) error
 
