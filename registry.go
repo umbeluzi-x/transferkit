@@ -4,12 +4,18 @@ import (
 	"sync"
 )
 
-type StaticRegistry struct {
+func NewProviderRegistry() *ProviderRegistry {
+	return &ProviderRegistry{
+		providers: make(map[string]ProviderBuilder),
+	}
+}
+
+type ProviderRegistry struct {
 	mu        sync.Mutex
 	providers map[string]ProviderBuilder
 }
 
-func (r *StaticRegistry) Register(code string, p ProviderBuilder) {
+func (r *ProviderRegistry) Register(code string, p ProviderBuilder) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -20,8 +26,12 @@ func (r *StaticRegistry) Register(code string, p ProviderBuilder) {
 	r.providers[code] = p
 }
 
-func (r *StaticRegistry) Lookup(criteria *RoutingCriteria) (*Provider, error) {
-	buildProvider, ok := r.providers[criteria.Code]
+func (r *ProviderRegistry) Lookup(code string) (*Provider, error) {
+	if r.providers == nil {
+		return nil, ErrProviderNotFound
+	}
+
+	buildProvider, ok := r.providers[code]
 	if !ok {
 		return nil, ErrProviderNotFound
 	}
@@ -29,9 +39,9 @@ func (r *StaticRegistry) Lookup(criteria *RoutingCriteria) (*Provider, error) {
 	return buildProvider(), nil
 }
 
-func (r *StaticRegistry) Walk(fn func(code string, builder *Provider) error) error {
+func (r *ProviderRegistry) Walk(walkFn func(code string, provider *Provider) error) error {
 	for code, buildProvider := range r.providers {
-		if err := fn(code, buildProvider()); err != nil {
+		if err := walkFn(code, buildProvider()); err != nil {
 			return err
 		}
 	}
@@ -39,7 +49,7 @@ func (r *StaticRegistry) Walk(fn func(code string, builder *Provider) error) err
 	return nil
 }
 
-func (r *StaticRegistry) Entries() []*Provider {
+func (r *ProviderRegistry) Providers() []*Provider {
 	providers := make([]*Provider, 0)
 
 	for _, buildProvider := range r.providers {
@@ -47,9 +57,4 @@ func (r *StaticRegistry) Entries() []*Provider {
 	}
 
 	return providers
-}
-
-type RoutingCriteria struct {
-	Code      string
-	Countries []string
 }

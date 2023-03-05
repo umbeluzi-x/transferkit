@@ -3,7 +3,7 @@ package transferkit
 import (
 	"context"
 	"errors"
-	"sort"
+	"github.com/santhosh-tekuri/jsonschema/v5"
 	"sync"
 )
 
@@ -26,10 +26,13 @@ type Set struct {
 	entries map[string]struct{}
 }
 
-func NewSet(s ...string) Set {
-	set := Set{
+func NewSet(s ...string) *Set {
+	set := &Set{
 		entries: make(map[string]struct{}),
 	}
+
+	set.mu.Lock()
+	defer set.mu.Unlock()
 
 	for _, i := range s {
 		set.entries[i] = struct{}{}
@@ -45,7 +48,7 @@ func (s *Set) Add(v string) {
 	s.entries[v] = struct{}{}
 }
 
-func (s Set) Remove(v string) {
+func (s *Set) Remove(v string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -113,40 +116,40 @@ func (p Provider) String() string {
 	return x
 }
 
+type Capability string
+
 const (
-	TransactionSend  = "TRANSACTION_SEND"
-	TransactionCheck = "TRANSACTION_CHECK"
-	AccountCheck     = "ACCOUNT_CHECK"
-	AccountFetch     = "ACCOUNT_FETCH"
-	BalanceFetch     = "BALANCE_FECTH"
+	CapSendTransaction  = Capability("CAP_SEND_TRANSACTION")
+	CapCheckTransaction = Capability("CAP_CHECK_TRANSACTION")
+	CapCheckAccount     = Capability("CAP_CHECK_ACCOUNT")
+	CapFetchAccount     = Capability("CAP_FETCH_ACCOUNT")
+	CapFetchBalance     = Capability("CAP_FECTH_BALANCE")
 )
 
-func (p Provider) Capabilities() []string {
-	caps := make([]string, 0)
+func (p Provider) Capabilities() []Capability {
+	capabilities := make([]Capability, 0)
 
 	if p.OnTransactionSend != nil {
-		caps = append(caps, "TRANSACTION_SEND")
+		capabilities = append(capabilities, CapSendTransaction)
 	}
 
 	if p.OnTransactionCheck != nil {
-		caps = append(caps, "TRANSACTION_CHECK")
+		capabilities = append(capabilities, CapCheckTransaction)
 	}
 
 	if p.OnAccountCheck != nil {
-		caps = append(caps, "ACCOUNT_CHECK")
+		capabilities = append(capabilities, CapCheckAccount)
 	}
 
 	if p.OnAccountFetch != nil {
-		caps = append(caps, "ACCOUNT_FETCH")
+		capabilities = append(capabilities, CapFetchAccount)
 	}
 
 	if p.OnBalanceFetch != nil {
-		caps = append(caps, "BALANCE_FETCH")
+		capabilities = append(capabilities, CapFetchBalance)
 	}
 
-	sort.Strings(caps)
-
-	return caps
+	return capabilities
 }
 
 type ProviderOptions struct {
@@ -157,9 +160,9 @@ type ProviderOptions struct {
 
 type Cache interface{}
 
-type ConfiguratorFunc func(context.Context, *ProviderOptions) error
+type ProviderConfiguratorFunc func(context.Context, *ProviderOptions) error
 
-func (c ConfiguratorFunc) Configure(ctx context.Context, opts *ProviderOptions) error {
+func (c ProviderConfiguratorFunc) Configure(ctx context.Context, opts *ProviderOptions) error {
 	return c(ctx, opts)
 }
 
@@ -175,4 +178,16 @@ func (c CloserFunc) Close(ctx context.Context) error {
 
 type ProviderCloser interface {
 	Close(context.Context) error
+}
+
+func NewSchema(v string) *Schema {
+	newSchema := &Schema{
+		value: jsonschema.MustCompileString("config.json", v),
+	}
+
+	return newSchema
+}
+
+type Schema struct {
+	value *jsonschema.Schema
 }

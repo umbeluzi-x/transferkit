@@ -14,24 +14,25 @@ func Build() *transferkit.Provider {
 	return &transferkit.Provider{
 		Name:    "EXAMPLE",
 		Version: "0.1.0",
-		Config:  []byte(`{
+		Config: providerkit.NewSchema(`{
 			"type": "object",
 			"properties": {
 				"base_url": {
 					"type": "string"
 				}
 			}
-		}`)
-		OnInit: transferkit.InitterFunc(exampleProvider.init),
+		}`),
+
+		OnConfigure:       transferkit.ProviderConfiguratorFunc(exampleProvider.init),
 		OnTransactionSend: transferkit.TransactionSenderFunc(exampleProvider.sendTransaction),
 	}
 }
 
-type exampleProvider struct{
+type exampleProvider struct {
 	config *struct{}
 }
 
-func (p *exampleProvider) init(ctx context.Context, *opts transferkit.ProviderOptions) error {
+func (p *exampleProvider) init(ctx context.Context, opts *transferkit.ProviderOptions) error {
 	if err := json.Unmarshal(opts, &p.config); err != nil {
 		return err
 	}
