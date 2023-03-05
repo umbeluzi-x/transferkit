@@ -1,49 +1,85 @@
 package transferkit
 
 import (
+	"context"
 	"errors"
 )
 
 var (
 	ErrInvalidDeliveryMethodType = errors.New("invalid payment method")
 	ErrInvalidCurrency           = errors.New("invalid currency")
+	ErrConnectionTimeout         = errors.New("connection timeout")
+	ErrConnectionRefused         = errors.New("connection refused")
+	ErrInvalidProviderCode       = errors.New("invalid provider code")
+	ErrProviderNotFound          = errors.New("provider not found")
+	ErrMissingConfigurator       = errors.New("missing initializer")
 )
+
+const (
+	defaultVersion = "latest"
+)
+
+type ProviderBuilder func() *Provider
 
 type Provider struct {
-	Name   string
+	Code               string
+	Description        string
+	Author             string
+	Version            string
+	Config             []byte
+	OnConfigure        ProviderConfigurator
+	OnTransactionSend  TransactionSender
+	OnTransactionCheck TransactionChecker
+	OnAccountCheck     AccountChecker
+	OnAccountFetch     AccountFetcher
+	OnBalanceFetch     BalanceFetcher
+	OnClose            ProviderCloser
+}
+
+func (p *Provider) Configure(ctx context.Context, opts *ProviderOptions) error {
+	if p.OnConfigure == nil {
+		return ErrMissingConfigurator
+	}
+
+	return p.OnConfigure.Configure(ctx, opts)
+}
+
+func (p *Provider) Close(ctx context.Context) error {
+	if p.OnClose == nil {
+		return nil
+	}
+
+	return p.OnClose.Close(ctx)
+}
+
+func (p Provider) Validate() error {
+	if p.Code == "" {
+		return ErrInvalidProviderCode
+	}
+
+	return nil
+}
+
+type ProviderOptions struct {
 	Config []byte
-	Operations
-	Requirements
 }
 
-type Requirements struct {
-	SupportedCurrencies     []Currency
-	SupportedPaymentMethods []DeliveryMethodType
+type ConfiguratorFunc func(context.Context, *ProviderOptions) error
+
+func (c ConfiguratorFunc) Configure(ctx context.Context, opts *ProviderOptions) error {
+	return c(ctx, opts)
 }
 
-type Operations struct {
-	SendTransaction TransactionSender
-	GetTransaction  TransactionChecker
-	CheckAccount    AccountChecker
-	FetchAccount    AccountFetcher
-	FetchBalance    BalanceFetcher
+type ProviderConfigurator interface {
+	Configure(context.Context, *ProviderOptions) error
 }
 
-type Currency string
+type CloserFunc func(context.Context) error
 
-const (
-	CurrencyMZN = "MZN"
-)
+func (c CloserFunc) Close(ctx context.Context) error {
+	return c(ctx)
+}
 
-type DeliveryMethodType string
-
-const (
-	DeliveryMethodTypeMobileTransfer = DeliveryMethodType("MOBILE_TRANSFER")
-	DeliveryMethodTypeBankTransfer   = DeliveryMethodType("BANK_TRANSFER")
-)
-
-type DeliveryMethod struct {
-	Type          DeliveryMethodType `json:"type"`
-	MSISDN        *string            `json:"msisdn"`
-	AccountNumber *string            `json:"account_number"`
+type ProviderCloser interface {
+	Close(context.Context) error
 }
