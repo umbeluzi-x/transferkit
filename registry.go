@@ -1,16 +1,15 @@
 package transferkit
 
 import (
-	"errors"
 	"sync"
 )
 
-type Registry struct {
+type StaticRegistry struct {
 	mu        sync.Mutex
 	providers map[string]ProviderBuilder
 }
 
-func (r *Registry) Register(code string, p ProviderBuilder) {
+func (r *StaticRegistry) Register(code string, p ProviderBuilder) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -21,21 +20,36 @@ func (r *Registry) Register(code string, p ProviderBuilder) {
 	r.providers[code] = p
 }
 
-func (r *Registry) Find(code string) (ProviderBuilder, error) {
-	builder, ok := r.providers[code]
+func (r *StaticRegistry) Lookup(criteria *RoutingCriteria) (*Provider, error) {
+	buildProvider, ok := r.providers[criteria.Code]
 	if !ok {
 		return nil, ErrProviderNotFound
 	}
 
-	return builder, nil
+	return buildProvider(), nil
 }
 
-func (r *Registry) Walk(fn func(code string, builder ProviderBuilder) error) error {
-	for code, builder := range r.providers {
-		if err := fn(code, builder); err != nil {
+func (r *StaticRegistry) Walk(fn func(code string, builder *Provider) error) error {
+	for code, buildProvider := range r.providers {
+		if err := fn(code, buildProvider()); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func (r *StaticRegistry) Entries() []*Provider {
+	providers := make([]*Provider, 0)
+
+	for _, buildProvider := range r.providers {
+		providers = append(providers, buildProvider())
+	}
+
+	return providers
+}
+
+type RoutingCriteria struct {
+	Code      string
+	Countries []string
 }
